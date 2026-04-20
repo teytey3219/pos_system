@@ -9,105 +9,93 @@ app.secret_key = 'gP#9xK@mZ2!qLv8nRw4$TjYe6&uBcDf'
 DB_PATH = os.path.join(os.path.dirname(__file__), 'pos_system.db')
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
+    return db
 
 def init_db():
-    conn = get_db()
-    cur = conn.cursor()
-
+    db = get_db()
+    cur = db.cursor()
     cur.executescript("""
-    CREATE TABLE IF NOT EXISTS shops (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        address TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        full_name TEXT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'cashier',
-        shop_id INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (shop_id) REFERENCES shops(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        price REAL NOT NULL,
-        stock INTEGER DEFAULT 0,
-        min_stock INTEGER DEFAULT 5,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS shop_inventory (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        shop_id INTEGER NOT NULL,
-        item_id INTEGER NOT NULL,
-        stock INTEGER DEFAULT 0,
-        min_stock INTEGER DEFAULT 5,
-        is_active INTEGER DEFAULT 1,
-        FOREIGN KEY (shop_id) REFERENCES shops(id),
-        FOREIGN KEY (item_id) REFERENCES items(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cashier_id INTEGER NOT NULL,
-        shop_id INTEGER,
-        total REAL NOT NULL,
-        payment_method TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (cashier_id) REFERENCES users(id),
-        FOREIGN KEY (shop_id) REFERENCES shops(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS transaction_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        transaction_id INTEGER NOT NULL,
-        item_id INTEGER NOT NULL,
-        quantity INTEGER NOT NULL,
-        subtotal REAL NOT NULL,
-        FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-        FOREIGN KEY (item_id) REFERENCES items(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS activity_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cashier_id INTEGER NOT NULL,
-        shop_id INTEGER,
-        action TEXT NOT NULL,
-        description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (cashier_id) REFERENCES users(id),
-        FOREIGN KEY (shop_id) REFERENCES shops(id)
-    );
+        CREATE TABLE IF NOT EXISTS shops (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            address TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'cashier',
+            shop_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (shop_id) REFERENCES shops(id)
+        );
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS shop_inventory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shop_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            stock INTEGER DEFAULT 0,
+            min_stock INTEGER DEFAULT 5,
+            is_active INTEGER DEFAULT 1,
+            FOREIGN KEY (shop_id) REFERENCES shops(id),
+            FOREIGN KEY (item_id) REFERENCES items(id)
+        );
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cashier_id INTEGER NOT NULL,
+            shop_id INTEGER,
+            total REAL DEFAULT 0,
+            payment_method TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cashier_id) REFERENCES users(id),
+            FOREIGN KEY (shop_id) REFERENCES shops(id)
+        );
+        CREATE TABLE IF NOT EXISTS transaction_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            transaction_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            subtotal REAL NOT NULL,
+            FOREIGN KEY (transaction_id) REFERENCES transactions(id),
+            FOREIGN KEY (item_id) REFERENCES items(id)
+        );
+        CREATE TABLE IF NOT EXISTS activity_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cashier_id INTEGER,
+            shop_id INTEGER,
+            action TEXT NOT NULL,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cashier_id) REFERENCES users(id),
+            FOREIGN KEY (shop_id) REFERENCES shops(id)
+        );
     """)
-
-    # Seed default admin if not exists
     cur.execute("SELECT id FROM users WHERE username='admin'")
     if not cur.fetchone():
-        cur.execute("INSERT INTO shops (name, address) VALUES ('Main Shop', 'Main Branch')")
-        shop_id = cur.lastrowid
-        cur.execute("INSERT INTO users (full_name, username, password, role, shop_id) VALUES (?, ?, ?, 'admin', ?)",
-                    ('Administrator', 'admin', generate_password_hash('admin123'), shop_id))
-    conn.commit()
-    conn.close()
+        cur.execute("INSERT INTO users (full_name, username, password, role) VALUES (?,?,?,'admin')",
+                    ('Administrator', 'admin', generate_password_hash('admin123')))
+    db.commit()
+    db.close()
+
+init_db()
 
 def log_activity(cashier_id, shop_id, action, description=""):
     try:
-        conn = get_db()
-        cur = conn.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute("INSERT INTO activity_logs (cashier_id, shop_id, action, description) VALUES (?,?,?,?)",
                     (cashier_id, shop_id, action, description))
-        conn.commit()
-        conn.close()
+        db.commit()
+        db.close()
     except Exception as e:
         print(f"[log_activity error] {e}")
 
@@ -125,8 +113,7 @@ def login():
         db = get_db()
         cur = db.cursor()
         cur.execute("""SELECT u.*, s.name as shop_name
-            FROM users u
-            LEFT JOIN shops s ON u.shop_id = s.id
+            FROM users u LEFT JOIN shops s ON u.shop_id = s.id
             WHERE u.username=?""", (username,))
         user = cur.fetchone()
         if user and not check_password_hash(user['password'], password):
@@ -170,10 +157,10 @@ def get_items():
         cur.execute("""SELECT i.id, i.name, i.price, si.stock
             FROM shop_inventory si
             JOIN items i ON si.item_id = i.id
-            WHERE si.shop_id = ? AND si.stock > 0""", (shop_id,))
+            WHERE si.shop_id=? AND si.stock > 0 AND si.is_active=1""", (shop_id,))
     else:
-        cur.execute("SELECT id, name, price, stock FROM items WHERE stock > 0")
-    items = [dict(row) for row in cur.fetchall()]
+        cur.execute("SELECT id, name, price FROM items")
+    items = [dict(r) for r in cur.fetchall()]
     db.close()
     return jsonify(items)
 
@@ -215,7 +202,8 @@ def payment(txn_id):
             shop_id = txn['shop_id']
             total = txn['total']
             cur.execute("SELECT item_id, quantity FROM transaction_items WHERE transaction_id=?", (txn_id,))
-            for row in cur.fetchall():
+            rows = cur.fetchall()
+            for row in rows:
                 if shop_id:
                     cur.execute("UPDATE shop_inventory SET stock = stock - ? WHERE shop_id=? AND item_id=?",
                                 (row['quantity'], shop_id, row['item_id']))
@@ -242,12 +230,12 @@ def receipt(txn_id):
         JOIN users u ON t.cashier_id = u.id
         LEFT JOIN shops s ON t.shop_id = s.id
         WHERE t.id=?""", (txn_id,))
-    txn = cur.fetchone()
+    txn = dict(cur.fetchone())
     cur.execute("""SELECT i.name, ti.quantity, ti.subtotal
         FROM transaction_items ti
         JOIN items i ON ti.item_id = i.id
         WHERE ti.transaction_id=?""", (txn_id,))
-    items = cur.fetchall()
+    items = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('receipt.html', txn=txn, items=items)
 
@@ -267,7 +255,7 @@ def admin_dashboard():
         FROM transactions t
         JOIN users u ON t.cashier_id = u.id
         LEFT JOIN shops s ON t.shop_id = s.id
-        WHERE 1=1"""
+        WHERE t.payment_method != 'pending'"""
     params = []
     if date_from:
         query += " AND DATE(t.created_at) >= ?"
@@ -285,29 +273,13 @@ def admin_dashboard():
     cur.execute(query, params)
     sales = [dict(r) for r in cur.fetchall()]
 
-    rev_query = "SELECT SUM(total) as filtered_total FROM transactions WHERE 1=1"
-    rev_params = []
-    if date_from:
-        rev_query += " AND DATE(created_at) >= ?"
-        rev_params.append(date_from)
-    if date_to:
-        rev_query += " AND DATE(created_at) <= ?"
-        rev_params.append(date_to)
-    if cashier_filter:
-        rev_query += " AND cashier_id=?"
-        rev_params.append(cashier_filter)
-    if shop_filter:
-        rev_query += " AND shop_id=?"
-        rev_params.append(shop_filter)
-    cur.execute(rev_query, rev_params)
+    cur.execute("SELECT COALESCE(SUM(total),0) as filtered_total FROM transactions WHERE payment_method != 'pending'")
     filtered_total = cur.fetchone()['filtered_total'] or 0
 
-    cur.execute("SELECT SUM(total) as day_total FROM transactions WHERE DATE(created_at)=DATE('now')" +
-                (" AND shop_id=?" if shop_filter else ""), ([shop_filter] if shop_filter else []))
+    cur.execute("SELECT COALESCE(SUM(total),0) as day_total FROM transactions WHERE DATE(created_at)=DATE('now') AND payment_method != 'pending'")
     day_total = cur.fetchone()['day_total'] or 0
 
-    cur.execute("SELECT SUM(total) as month_total FROM transactions WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')" +
-                (" AND shop_id=?" if shop_filter else ""), ([shop_filter] if shop_filter else []))
+    cur.execute("SELECT COALESCE(SUM(total),0) as month_total FROM transactions WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now') AND payment_method != 'pending'")
     month_total = cur.fetchone()['month_total'] or 0
 
     cur.execute("SELECT id, COALESCE(full_name, username) as name FROM users WHERE role='cashier'")
@@ -317,10 +289,9 @@ def admin_dashboard():
 
     cur.execute("""SELECT DATE(created_at) as sale_date, SUM(total) as daily_total
         FROM transactions
-        WHERE created_at >= DATE('now', '-7 days')
-        GROUP BY DATE(created_at)
-        ORDER BY sale_date ASC""")
-    daily_sales = cur.fetchall()
+        WHERE created_at >= DATE('now','-7 days') AND payment_method != 'pending'
+        GROUP BY DATE(created_at) ORDER BY sale_date ASC""")
+    daily_sales = [dict(r) for r in cur.fetchall()]
     db.close()
 
     chart_labels = [str(row['sale_date']) for row in daily_sales]
@@ -328,27 +299,19 @@ def admin_dashboard():
 
     active_filters = []
     if date_from or date_to:
-        if date_from and date_to:
-            active_filters.append(f"{date_from} to {date_to}")
-        elif date_from:
-            active_filters.append(f"From {date_from}")
-        elif date_to:
-            active_filters.append(f"Until {date_to}")
-    if shop_filter:
-        active_filters.append("Shop")
-    if cashier_filter:
-        active_filters.append("Cashier")
+        active_filters.append(f"{date_from} to {date_to}" if date_from and date_to else f"From {date_from}" if date_from else f"Until {date_to}")
+    if shop_filter: active_filters.append("Shop")
+    if cashier_filter: active_filters.append("Cashier")
     filter_label = "Filtered: " + ", ".join(active_filters) if active_filters else "All Time Total"
 
     return render_template('admin_dashboard.html',
                            sales=sales, chart_labels=chart_labels, chart_data=chart_data,
-                           username=session['username'], cashier_list=cashier_list,
-                           shop_list=shop_list, day_total=day_total, month_total=month_total,
-                           filtered_total=filtered_total, filter_label=filter_label,
-                           selected_cashier=cashier_filter, selected_date_from=date_from,
-                           selected_date_to=date_to, selected_shop=shop_filter)
+                           username=session['username'], cashier_list=cashier_list, shop_list=shop_list,
+                           day_total=day_total, month_total=month_total, filtered_total=filtered_total,
+                           filter_label=filter_label, selected_cashier=cashier_filter,
+                           selected_date_from=date_from, selected_date_to=date_to, selected_shop=shop_filter)
 
-# ---------- ADD ITEM ----------
+# ---------- ADD ITEM (multi-shop) ----------
 @app.route('/admin/add_item', methods=['GET', 'POST'])
 def add_item():
     if session.get('role') != 'admin':
@@ -401,8 +364,8 @@ def inventory():
                 cur.execute("INSERT INTO items (name, price) VALUES (?,?)", (name, price))
                 db.commit()
                 new_item_id = cur.lastrowid
-                cur.execute("""INSERT INTO shop_inventory (shop_id, item_id, stock, min_stock, is_active)
-                    VALUES (?,?,?,?,1)""", (shop_id, new_item_id, stock, min_stock))
+                cur.execute("INSERT INTO shop_inventory (shop_id, item_id, stock, min_stock, is_active) VALUES (?,?,?,?,1)",
+                            (shop_id, new_item_id, stock, min_stock))
                 db.commit()
         elif action == 'update_stock':
             cur.execute("UPDATE shop_inventory SET stock=? WHERE shop_id=? AND item_id=?",
@@ -428,9 +391,10 @@ def inventory():
         sid = row['shop_id']
         if sid not in inventory_data:
             inventory_data[sid] = []
-        inventory_data[sid].append({'id': row['id'], 'name': row['name'],
-                                    'price': float(row['price']), 'stock': row['stock'],
-                                    'min_stock': row['min_stock']})
+        inventory_data[sid].append({
+            'id': row['id'], 'name': row['name'],
+            'price': float(row['price']), 'stock': row['stock'], 'min_stock': row['min_stock']
+        })
 
     cur.execute("""SELECT i.name as item_name, s.name as shop_name, si.stock, si.min_stock
         FROM shop_inventory si
@@ -445,7 +409,7 @@ def inventory():
     return render_template('inventory.html', inventory_data=inventory_data,
                            low_stock=low_stock, shop_list=shop_list, selected_shop=selected_shop)
 
-# ---------- SHOPS ----------
+# ---------- SHOP MANAGEMENT ----------
 @app.route('/admin/shops', methods=['GET', 'POST'])
 def shops():
     if session.get('role') != 'admin':
@@ -462,14 +426,13 @@ def shops():
             cur.execute("DELETE FROM shops WHERE id=?", (request.form['shop_id'],))
             db.commit()
     cur.execute("""SELECT s.*, COUNT(u.id) as cashier_count
-        FROM shops s
-        LEFT JOIN users u ON s.id = u.shop_id AND u.role='cashier'
+        FROM shops s LEFT JOIN users u ON s.id = u.shop_id AND u.role='cashier'
         GROUP BY s.id ORDER BY s.created_at DESC""")
     shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('shops.html', shops=shops_list, username=session['username'])
 
-# ---------- CASHIERS ----------
+# ---------- CASHIER MANAGEMENT ----------
 @app.route('/admin/cashiers')
 def cashiers():
     if session.get('role') != 'admin':
@@ -489,16 +452,18 @@ def cashiers():
 def add_cashier():
     if session.get('role') != 'admin':
         return redirect('/login')
+    full_name = request.form['full_name']
+    username = request.form['username']
+    password = request.form['password']
+    shop_id = request.form['shop_id'] or None
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT id FROM users WHERE username=?", (request.form['username'],))
+    cur.execute("SELECT id FROM users WHERE username=?", (username,))
     if cur.fetchone():
         db.close()
         return redirect('/admin/cashiers?error=Username already exists')
-    shop_id = request.form['shop_id'] or None
     cur.execute("INSERT INTO users (full_name, username, password, role, shop_id) VALUES (?,?,?,'cashier',?)",
-                (request.form['full_name'], request.form['username'],
-                 generate_password_hash(request.form['password']), shop_id))
+                (full_name, username, generate_password_hash(password), shop_id))
     db.commit()
     db.close()
     return redirect('/admin/cashiers?success=Cashier added successfully')
@@ -541,14 +506,14 @@ def edit_item(item_id):
         db.close()
         return redirect('/admin/inventory')
     cur.execute("SELECT * FROM items WHERE id=?", (item_id,))
-    item = cur.fetchone()
+    item = dict(cur.fetchone())
     cur.execute("""SELECT s.id, s.name, COALESCE(si.stock,0) as stock, COALESCE(si.min_stock,5) as min_stock
         FROM shops s
         LEFT JOIN shop_inventory si ON s.id=si.shop_id AND si.item_id=?
         ORDER BY s.name""", (item_id,))
     shop_stocks = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('edit_item.html', item=dict(item), shop_stocks=shop_stocks)
+    return render_template('edit_item.html', item=item, shop_stocks=shop_stocks)
 
 # ---------- TRANSACTION DETAIL ----------
 @app.route('/admin/transaction/<int:txn_id>')
@@ -562,11 +527,12 @@ def transaction_detail(txn_id):
         JOIN users u ON t.cashier_id = u.id
         LEFT JOIN shops s ON t.shop_id = s.id
         WHERE t.id=?""", (txn_id,))
-    txn = cur.fetchone()
+    txn = dict(cur.fetchone())
     cur.execute("""SELECT i.name, ti.quantity, ti.subtotal
-        FROM transaction_items ti JOIN items i ON ti.item_id=i.id
+        FROM transaction_items ti
+        JOIN items i ON ti.item_id = i.id
         WHERE ti.transaction_id=?""", (txn_id,))
-    items = cur.fetchall()
+    items = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('transaction_detail.html', txn=txn, items=items)
 
@@ -626,11 +592,11 @@ def edit_cashier(user_id):
             db.close()
             return redirect('/admin/cashiers')
     cur.execute("SELECT * FROM users WHERE id=?", (user_id,))
-    cashier = cur.fetchone()
+    cashier = dict(cur.fetchone())
     cur.execute("SELECT * FROM shops ORDER BY name")
     shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('edit_cashier.html', cashier=dict(cashier) if cashier else None, shops=shops_list, error=error)
+    return render_template('edit_cashier.html', cashier=cashier, shops=shops_list, error=error)
 
 # ---------- SALES REPORT ----------
 @app.route('/admin/reports/items')
@@ -644,24 +610,24 @@ def sales_per_item():
         cur.execute("""SELECT i.name as item_name, s.name as shop_name,
             SUM(ti.quantity) as total_qty, SUM(ti.subtotal) as total_sales
             FROM transaction_items ti
-            JOIN items i ON ti.item_id=i.id
-            JOIN transactions t ON ti.transaction_id=t.id
-            JOIN shops s ON t.shop_id=s.id
+            JOIN items i ON ti.item_id = i.id
+            JOIN transactions t ON ti.transaction_id = t.id
+            JOIN shops s ON t.shop_id = s.id
             WHERE t.shop_id=?
             GROUP BY i.id, s.id ORDER BY total_sales DESC""", (shop_filter,))
     else:
         cur.execute("""SELECT i.name as item_name, s.name as shop_name,
             SUM(ti.quantity) as total_qty, SUM(ti.subtotal) as total_sales
             FROM transaction_items ti
-            JOIN items i ON ti.item_id=i.id
-            JOIN transactions t ON ti.transaction_id=t.id
-            JOIN shops s ON t.shop_id=s.id
+            JOIN items i ON ti.item_id = i.id
+            JOIN transactions t ON ti.transaction_id = t.id
+            JOIN shops s ON t.shop_id = s.id
             GROUP BY i.id, s.id ORDER BY total_sales DESC""")
-    report = cur.fetchall()
+    report = [dict(r) for r in cur.fetchall()]
     cur.execute("SELECT * FROM shops ORDER BY name")
     shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('sales_report.html', report=[dict(r) for r in report], shops=shops_list, selected_shop=shop_filter)
+    return render_template('sales_report.html', report=report, shops=shops_list, selected_shop=shop_filter)
 
 # ---------- ACTIVITY LOGS ----------
 @app.route('/admin/activity-logs')
@@ -674,10 +640,12 @@ def admin_activity_logs():
     action = request.args.get('action', '')
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
-    query = """SELECT al.*, u.full_name AS cashier_name, s.name AS shop_name
+
+    query = """SELECT al.*, COALESCE(u.full_name, u.username) AS cashier_name,
+        s.name AS shop_name
         FROM activity_logs al
-        JOIN users u ON al.cashier_id=u.id
-        JOIN shops s ON al.shop_id=s.id
+        LEFT JOIN users u ON al.cashier_id = u.id
+        LEFT JOIN shops s ON al.shop_id = s.id
         WHERE 1=1"""
     params = []
     if shop_id:
@@ -694,17 +662,14 @@ def admin_activity_logs():
         params.append(date_to)
     query += " ORDER BY al.created_at DESC LIMIT 500"
     cur.execute(query, params)
-    logs = cur.fetchall()
+    logs = [dict(r) for r in cur.fetchall()]
+
     cur.execute("SELECT id, name FROM shops ORDER BY name")
     shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('activity_logs.html', logs=[dict(r) for r in logs], shops=shops_list,
+    return render_template('activity_logs.html', logs=logs, shops=shops_list,
                            selected_shop=shop_id, selected_action=action,
                            date_from=date_from, date_to=date_to)
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000, debug=False)
-
-# Trigger DB init on import (for gunicorn)
-init_db()
