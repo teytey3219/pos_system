@@ -283,7 +283,7 @@ def admin_dashboard():
         params.append(shop_filter)
     query += " ORDER BY t.created_at DESC"
     cur.execute(query, params)
-    sales = cur.fetchall()
+    sales = [dict(r) for r in cur.fetchall()]
 
     rev_query = "SELECT SUM(total) as filtered_total FROM transactions WHERE 1=1"
     rev_params = []
@@ -311,9 +311,9 @@ def admin_dashboard():
     month_total = cur.fetchone()['month_total'] or 0
 
     cur.execute("SELECT id, COALESCE(full_name, username) as name FROM users WHERE role='cashier'")
-    cashier_list = cur.fetchall()
+    cashier_list = [dict(r) for r in cur.fetchall()]
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shop_list = cur.fetchall()
+    shop_list = [dict(r) for r in cur.fetchall()]
 
     cur.execute("""SELECT DATE(created_at) as sale_date, SUM(total) as daily_total
         FROM transactions
@@ -356,7 +356,7 @@ def add_item():
     db = get_db()
     cur = db.cursor()
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shops = cur.fetchall()
+    shops = [dict(r) for r in cur.fetchall()]
     success = None
     error = None
     if request.method == 'POST':
@@ -423,9 +423,9 @@ def inventory():
         JOIN shops s ON si.shop_id = s.id
         WHERE si.stock <= si.min_stock AND si.is_active = 1
         ORDER BY s.name""")
-    low_stock = cur.fetchall()
+    low_stock = [dict(r) for r in cur.fetchall()]
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shop_list = cur.fetchall()
+    shop_list = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('inventory.html', inventory_data=inventory_data,
                            low_stock=low_stock, shop_list=shop_list, selected_shop=selected_shop)
@@ -450,7 +450,7 @@ def shops():
         FROM shops s
         LEFT JOIN users u ON s.id = u.shop_id AND u.role='cashier'
         GROUP BY s.id ORDER BY s.created_at DESC""")
-    shops_list = cur.fetchall()
+    shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('shops.html', shops=shops_list, username=session['username'])
 
@@ -464,9 +464,9 @@ def cashiers():
     cur.execute("""SELECT u.*, s.name as shop_name
         FROM users u LEFT JOIN shops s ON u.shop_id = s.id
         WHERE u.role='cashier' ORDER BY u.created_at DESC""")
-    cashiers_list = cur.fetchall()
+    cashiers_list = [dict(r) for r in cur.fetchall()]
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shops_list = cur.fetchall()
+    shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
     return render_template('cashiers.html', cashiers=cashiers_list, shops=shops_list, username=session['username'])
 
@@ -530,9 +530,9 @@ def edit_item(item_id):
         FROM shops s
         LEFT JOIN shop_inventory si ON s.id=si.shop_id AND si.item_id=?
         ORDER BY s.name""", (item_id,))
-    shop_stocks = cur.fetchall()
+    shop_stocks = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('edit_item.html', item=item, shop_stocks=shop_stocks)
+    return render_template('edit_item.html', item=dict(item), shop_stocks=shop_stocks)
 
 # ---------- TRANSACTION DETAIL ----------
 @app.route('/admin/transaction/<int:txn_id>')
@@ -612,9 +612,9 @@ def edit_cashier(user_id):
     cur.execute("SELECT * FROM users WHERE id=?", (user_id,))
     cashier = cur.fetchone()
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shops_list = cur.fetchall()
+    shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('edit_cashier.html', cashier=cashier, shops=shops_list, error=error)
+    return render_template('edit_cashier.html', cashier=dict(cashier) if cashier else None, shops=shops_list, error=error)
 
 # ---------- SALES REPORT ----------
 @app.route('/admin/reports/items')
@@ -643,9 +643,9 @@ def sales_per_item():
             GROUP BY i.id, s.id ORDER BY total_sales DESC""")
     report = cur.fetchall()
     cur.execute("SELECT * FROM shops ORDER BY name")
-    shops_list = cur.fetchall()
+    shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('sales_report.html', report=report, shops=shops_list, selected_shop=shop_filter)
+    return render_template('sales_report.html', report=[dict(r) for r in report], shops=shops_list, selected_shop=shop_filter)
 
 # ---------- ACTIVITY LOGS ----------
 @app.route('/admin/activity-logs')
@@ -680,9 +680,9 @@ def admin_activity_logs():
     cur.execute(query, params)
     logs = cur.fetchall()
     cur.execute("SELECT id, name FROM shops ORDER BY name")
-    shops_list = cur.fetchall()
+    shops_list = [dict(r) for r in cur.fetchall()]
     db.close()
-    return render_template('activity_logs.html', logs=logs, shops=shops_list,
+    return render_template('activity_logs.html', logs=[dict(r) for r in logs], shops=shops_list,
                            selected_shop=shop_id, selected_action=action,
                            date_from=date_from, date_to=date_to)
 
