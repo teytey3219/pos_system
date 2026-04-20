@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Item</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-dark bg-dark px-4">
+    <span class="navbar-brand">✏️ Edit Item</span>
+    <div>
+      <a href="/admin/inventory" class="btn btn-outline-light btn-sm me-2">← Back to Inventory</a>
+      <a href="/admin/dashboard" class="btn btn-outline-light btn-sm me-2">📊 Dashboard</a>
+      <a href="/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="card p-4 mx-auto" style="max-width: 700px;">
+      <h5 class="mb-4">✏️ Editing: <strong>{{ item['name'] }}</strong></h5>
+
+      <form method="POST">
+
+        <!-- Global Item Info -->
+        <div class="card p-3 mb-4 bg-light">
+          <h6 class="mb-3">📦 Item Details (applies to all shops)</h6>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Item Name</label>
+              <input type="text" name="name" class="form-control"
+                     value="{{ item['name'] }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Price (₱)</label>
+              <input type="number" name="price" class="form-control"
+                     value="{{ item['price'] }}" step="0.01" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Per-Shop Stock -->
+        <h6 class="mb-3">🏪 Stock Per Shop</h6>
+        {% for shop in shop_stocks %}
+        <div class="card p-3 mb-3">
+          <h6 class="text-primary">🏪 {{ shop['name'] }}</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Current Stock</label>
+              <input type="number" name="stock_{{ shop['id'] }}"
+                     class="form-control" value="{{ shop['stock'] }}" min="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Low Stock Threshold (Min)</label>
+              <input type="number" name="min_stock_{{ shop['id'] }}"
+                     class="form-control" value="{{ shop['min_stock'] }}" min="0" required>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if not shop_stocks %}
+        <div class="alert alert-warning">
+          No shops found. Please <a href="/admin/shops">add a shop</a> first.
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-3">
+          <button type="submit" class="btn btn-success w-100">💾 Save Changes</button>
+          <a href="/admin/inventory" class="btn btn-secondary w-100">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</body>
+</html>

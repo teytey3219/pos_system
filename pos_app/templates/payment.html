@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payment</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background-color: var(--clr-900);
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-400);
+    }
+    .page-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .payment-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .payment-icon {
+      font-size: 2rem;
+      display: block;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .payment-card h2 {
+      color: var(--clr-900);
+      font-weight: 800;
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .total-display {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: var(--clr-400);
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      margin: 20px 0 28px;
+    }
+    .total-display .label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    .total-display .amount {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: white;
+    }
+    label {
+      font-weight: 600;
+      color: var(--clr-900);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #d0e8ec;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      color: var(--clr-900);
+      background: #f8fbfc;
+      outline: none;
+      margin-bottom: 24px;
+      transition: border-color 0.2s;
+    }
+    select:focus { border-color: var(--clr-700); }
+    .btn-confirm {
+      width: 100%;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-confirm:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      transform: translateY(-1px);
+    }
+    .btn-cancel {
+      width: 100%;
+      background: var(--clr-red2);
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-cancel:hover { background: var(--clr-red3); }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">💳 Accept Payment</span>
+  </nav>
+
+  <div class="page-body">
+    <div class="payment-card">
+      <span class="payment-icon">💳</span>
+      <h2>Accept Payment</h2>
+
+      <div class="total-display">
+        <div class="label">Total Amount</div>
+        <div class="amount">₱{{ "%.2f"|format(total) }}</div>
+      </div>
+
+      <form method="POST">
+        <label for="method">Payment Method</label>
+        <select name="method" id="method" required>
+          <option value="" disabled selected>-- Select Payment Method --</option>
+          <option value="Cash">💵 Cash</option>
+          <option value="GCash">📱 GCash</option>
+          <option value="Card">💳 Card</option>
+        </select>
+        <button type="submit" name="action" value="confirm" class="btn-confirm">✅ Confirm Payment</button>
+        <button type="submit" name="action" value="cancel" class="btn-cancel">✖ Cancel Order</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

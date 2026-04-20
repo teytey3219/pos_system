@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Cashiers</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-cream: #E9D8A6;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+    }
+
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+
+    /* NAVBAR */
+    .navbar {
+      background-color: var(--clr-900) !important;
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--clr-400) !important;
+      font-size: 1rem;
+    }
+    .btn-nav {
+      background: transparent;
+      border: 1.5px solid var(--clr-700);
+      color: var(--clr-400);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover { background: var(--clr-700); color: white; }
+    .btn-logout {
+      background-color: var(--clr-red2);
+      border: none; color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+    }
+    .btn-logout:hover { background-color: var(--clr-red3); color: white; }
+
+    /* FORM CARD */
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .form-card h5 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f4f8;
+      margin-bottom: 18px;
+    }
+    .form-label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--clr-900);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1.5px solid #d0dce6;
+      font-size: 0.88rem;
+      padding: 9px 12px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 3px rgba(10,147,150,0.15);
+    }
+    .btn-add {
+      width: 100%;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 8px;
+      padding: 11px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-add:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* TABLE CARD */
+    .table-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .table-card h5 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f4f8;
+      margin-bottom: 18px;
+    }
+    .table thead th {
+      background-color: var(--clr-900);
+      color: var(--clr-400);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      padding: 12px 14px;
+      white-space: nowrap;
+    }
+    .table tbody tr {
+      font-size: 0.88rem;
+      border-bottom: 1px solid #eef2f6;
+      transition: background 0.15s;
+    }
+    .table tbody tr:hover { background-color: #f0fafa; }
+    .table tbody td {
+      padding: 11px 14px;
+      vertical-align: middle;
+    }
+
+    /* BADGES */
+    .badge-shop {
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .badge-unassigned {
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ACTION BUTTONS */
+    .btn-edit {
+      background-color: var(--clr-700);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 5px 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-edit:hover { background-color: var(--clr-800); color: white; }
+    .btn-delete {
+      background-color: var(--clr-red2);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 5px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete:hover { background-color: var(--clr-red3); }
+
+    .action-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">👥 Manage Cashiers</span>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/admin/dashboard" class="btn btn-nav">📊 Dashboard</a>
+      <a href="/admin/shops" class="btn btn-nav">🏪 Shops</a>
+      <a href="/admin/inventory" class="btn btn-nav">📦 Inventory</a>
+      <a href="/logout" class="btn btn-logout"
+         onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 mt-4">
+
+    {% if request.args.get('success') %}
+    <div class="alert alert-success rounded-3">✅ {{ request.args.get('success') }}</div>
+    {% endif %}
+    {% if request.args.get('error') %}
+    <div class="alert alert-danger rounded-3">❌ {{ request.args.get('error') }}</div>
+    {% endif %}
+
+    <div class="row g-4">
+
+      <!-- ADD CASHIER FORM -->
+      <div class="col-md-4">
+        <div class="form-card">
+          <h5>➕ Add New Cashier</h5>
+          <form method="POST" action="/admin/cashiers/add">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="full_name" class="form-control"
+                     placeholder="e.g. Maria Santos" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control"
+                     placeholder="e.g. maria_santos" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control"
+                     placeholder="Set a password" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Assign to Shop</label>
+              <select name="shop_id" class="form-select">
+                <option value="">-- Select Shop --</option>
+                {% for shop in shops %}
+                <option value="{{ shop['id'] }}">{{ shop['name'] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn-add">✅ Add Cashier</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- CASHIERS TABLE -->
+      <div class="col-md-8">
+        <div class="table-card">
+          <h5>👥 Current Cashiers</h5>
+          <div class="table-responsive">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Full Name</th>
+                  <th>Username</th>
+                  <th>Shop</th>
+                  <th>Date Added</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in cashiers %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td><strong>{{ c['full_name'] or '—' }}</strong></td>
+                  <td>{{ c['username'] }}</td>
+                  <td>
+                    {% if c['shop_name'] %}
+                      <span class="badge-shop">🏪 {{ c['shop_name'] }}</span>
+                    {% else %}
+                      <span class="badge-unassigned">Unassigned</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ c['created_at'] }}</td>
+                  <td>
+                    <div class="action-cell">
+                      <a href="/admin/cashiers/edit/{{ c['id'] }}" class="btn-edit">✏️ Edit</a>
+                      <form method="POST" action="/admin/cashiers/delete">
+                        <input type="hidden" name="cashier_id" value="{{ c['id'] }}">
+                        <button type="submit" class="btn-delete"
+                          onclick="return confirm('Delete this cashier?')">🗑️ Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% if not cashiers %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">No cashiers yet.</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

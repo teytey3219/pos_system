@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cashier POS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-cream: #E9D8A6;
+      --clr-amber: #EE9B00;
+      --clr-orange: #CA6702;
+      --clr-red1: #BB3E03;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .navbar {
+      background-color: var(--clr-900) !important;
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .navbar-brand {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-400) !important;
+    }
+
+    .shop-label {
+      color: var(--clr-cream);
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .btn-nav {
+      background: transparent;
+      border: 1.5px solid var(--clr-700);
+      color: var(--clr-400);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover {
+      background: var(--clr-700);
+      color: white;
+    }
+
+    .btn-logout {
+      background-color: var(--clr-red2);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--clr-red3);
+      color: white;
+    }
+
+    .pos-wrapper {
+      display: flex;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    .items-panel {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid #dce6ee;
+    }
+
+    .items-panel h5 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 1rem;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .item-card {
+      cursor: pointer;
+      border-radius: 12px;
+      border: 2px solid #d0e8ec;
+      background: white;
+      padding: 14px 10px;
+      text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .item-card:hover {
+      border-color: var(--clr-700);
+      background: #f0fafa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(10,147,150,0.15);
+    }
+
+    .item-card .item-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--clr-900);
+      margin-bottom: 4px;
+    }
+
+    .item-card .item-price {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-800);
+      margin-bottom: 6px;
+    }
+
+    .item-card.out-of-stock {
+      opacity: 0.5;
+      border-color: #e0b0b0;
+      cursor: not-allowed;
+    }
+
+    .item-card.low-stock {
+      border-color: var(--clr-amber);
+    }
+
+    .badge-stock {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .badge-ok {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-low {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-out {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .order-panel {
+      width: 360px;
+      min-width: 320px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -2px 0 12px rgba(0,0,0,0.06);
+    }
+
+    .order-header {
+      background: var(--clr-900);
+      color: var(--clr-400);
+      padding: 16px 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .order-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .order-empty {
+      text-align: center;
+      color: #aaa;
+      padding: 40px 20px;
+      font-size: 0.88rem;
+    }
+
+    .order-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f4f8;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+
+    .order-row:hover {
+      background: #f8fbfc;
+    }
+
+    .order-row-left {
+      flex: 1;
+    }
+
+    .order-row-left .name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--clr-900);
+    }
+
+    .order-row-left .price-each {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-qty {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid var(--clr-700);
+      background: white;
+      color: var(--clr-700);
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      padding: 0;
+    }
+
+    .btn-qty:hover {
+      background: var(--clr-700);
+      color: white;
+    }
+
+    .qty-num {
+      font-weight: 700;
+      font-size: 0.9rem;
+      min-width: 22px;
+      text-align: center;
+      color: var(--clr-900);
+    }
+
+    .order-row-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .subtotal {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--clr-800);
+    }
+
+    .btn-remove {
+      font-size: 0.7rem;
+      color: var(--clr-red2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .btn-remove:hover {
+      color: var(--clr-red3);
+    }
+
+    .order-footer {
+      padding: 16px 20px;
+      border-top: 2px solid #f0f4f8;
+      background: white;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .total-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--clr-900);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .total-amount {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--clr-800);
+    }
+
+    .btn-payment {
+      width: 100%;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-payment:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-clear {
+      width: 100%;
+      background: #f1f5f9;
+      border: none;
+      color: #64748b;
+      border-radius: 10px;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .btn-clear:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">🛒 POS — {{ username }}</span>
+    <span class="shop-label mx-auto">🏪 {{ shop_name }}</span>
+    <div class="d-flex gap-2">
+      <a href="/cashier/change_password" class="btn btn-nav">🔑 Change Password</a>
+      <a href="/logout" class="btn btn-logout"
+         onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+    </div>
+  </nav>
+
+  <div class="pos-wrapper">
+        <div class="items-panel">
+      <h5>🛍️ Select Items</h5>
+      <div class="mb-3">
+        <input type="text" id="itemSearch"
+          placeholder="🔍 Search items by name..."
+          oninput="filterItems()"
+          autocomplete="off"
+          style="width:100%; padding:10px 14px; border:2px solid var(--clr-700);
+                 border-radius:10px; font-size:0.88rem; outline:none;
+                 background:#f8fbfc; color:var(--clr-900);">
+      </div>
+      <div class="row g-2" id="item-list"></div>
+    </div>
+
+    <div class="order-panel">
+      <div class="order-header">🧾 Order Summary</div>
+      <div class="order-items" id="order-summary">
+        <div class="order-empty">No items selected.</div>
+      </div>
+      <div class="order-footer">
+        <div class="total-row">
+          <span class="total-label">Total</span>
+          <span class="total-amount">₱<span id="total">0.00</span></span>
+        </div>
+        <button class="btn-payment" onclick="proceedPayment()">✅ Proceed to Payment</button>
+        <button class="btn-clear" onclick="clearOrder()">🗑️ Clear Order</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let items = [];
+    let order = [];
+
+    fetch('/api/items')
+      .then(res => res.json())
+      .then(data => {
+        items = data;
+        renderItems();
+      });
+
+    function renderItems() {
+      var itemList = document.getElementById('item-list');
+      itemList.innerHTML = '';
+      items.forEach(function(item) {
+        var isLow = item.stock <= item.min_stock;
+        var isOut = item.stock === 0;
+        var cardClass = isOut ? 'item-card out-of-stock' : isLow ? 'item-card low-stock' : 'item-card';
+        var badgeHtml = isOut
+          ? '<span class="badge-stock badge-out">Out of Stock</span>'
+          : isLow
+          ? '<span class="badge-stock badge-low">⚠️ Low: ' + item.stock + ' left</span>'
+          : '<span class="badge-stock badge-ok">✔ ' + item.stock + ' in stock</span>';
+        var clickFn = isOut ? 'alertOutOfStock("' + item.name + '")' : 'addToOrder(' + item.id + ')';
+
+        itemList.innerHTML += '<div class="col-6 col-md-4 col-lg-3">' +
+          '<div class="' + cardClass + '" onclick="' + clickFn + '">' +
+          '<div class="item-name">' + item.name + '</div>' +
+          '<div class="item-price">₱' + parseFloat(item.price).toFixed(2) + '</div>' +
+          badgeHtml +
+          '</div></div>';
+      });
+    }
+
+    function filterItems() {
+      var query = document.getElementById('itemSearch').value.toLowerCase().trim();
+      var cards = document.querySelectorAll('#item-list .col-6');
+      cards.forEach(function(col) {
+        var name = col.querySelector('.item-name').textContent.toLowerCase();
+        col.style.display = name.includes(query) ? '' : 'none';
+      });
+    }
+
+    function alertOutOfStock(name) {
+      alert('❌ "' + name + '" is out of stock. Please inform the admin to restock.');
+    }
+
+    function addToOrder(itemId) {
+      var item = items.find(function(i) { return i.id === itemId; });
+      var existing = order.find(function(i) { return i.id === itemId; });
+      var currentQty = existing ? existing.qty : 0;
+
+      if (item.stock <= item.min_stock && !confirm('⚠️ "' + item.name + '" is running low — only ' + item.stock + ' left.\nAdd anyway?')) return;
+
+      if (currentQty >= item.stock) {
+        alert('❌ Cannot add more "' + item.name + '" — only ' + item.stock + ' available.');
+        return;
+      }
+
+      if (existing) {
+        existing.qty += 1;
+        existing.subtotal = existing.qty * parseFloat(existing.price);
+      } else {
+        order.push({
+          id: item.id,
+          name: item.name,
+          price: parseFloat(item.price),
+          qty: 1,
+          subtotal: parseFloat(item.price)
+        });
+      }
+
+      renderOrder();
+    }
+
+    function increaseQty(itemId) {
+      var existing = order.find(function(i) { return i.id === itemId; });
+      if (!existing) return;
+      existing.qty += 1;
+      existing.subtotal = existing.qty * parseFloat(existing.price);
+      renderOrder();
+    }
+
+    function decreaseQty(itemId) {
+      var existing = order.find(function(i) { return i.id === itemId; });
+      if (!existing) return;
+
+      if (existing.qty > 1) {
+        existing.qty -= 1;
+        existing.subtotal = existing.qty * parseFloat(existing.price);
+      } else {
+        order = order.filter(function(i) { return i.id !== itemId; });
+      }
+
+      renderOrder();
+    }
+
+    function removeItem(itemId) {
+      order = order.filter(function(i) { return i.id !== itemId; });
+      renderOrder();
+    }
+
+    function renderOrder() {
+      var orderSummary = document.getElementById('order-summary');
+      var totalEl = document.getElementById('total');
+      orderSummary.innerHTML = '';
+
+      var total = 0;
+
+      if (order.length === 0) {
+        orderSummary.innerHTML = '<div class="order-empty">No items selected.</div>';
+      } else {
+        order.forEach(function(item) {
+          total += item.subtotal;
+          orderSummary.innerHTML +=
+            '<div class="order-row">' +
+              '<div class="order-row-left">' +
+                '<div class="name">' + item.name + '</div>' +
+                '<div class="price-each">₱' + item.price.toFixed(2) + ' each</div>' +
+              '</div>' +
+              '<div class="qty-controls">' +
+                '<button class="btn-qty" onclick="decreaseQty(' + item.id + ')">−</button>' +
+                '<span class="qty-num">' + item.qty + '</span>' +
+                '<button class="btn-qty" onclick="increaseQty(' + item.id + ')">+</button>' +
+              '</div>' +
+              '<div class="order-row-right">' +
+                '<span class="subtotal">₱' + item.subtotal.toFixed(2) + '</span>' +
+                '<button class="btn-remove" onclick="removeItem(' + item.id + ')">Remove</button>' +
+              '</div>' +
+            '</div>';
+        });
+      }
+
+      totalEl.textContent = total.toFixed(2);
+    }
+
+    function clearOrder() {
+      if (order.length === 0) return;
+      if (confirm('Clear the whole order?')) {
+        order = [];
+        renderOrder();
+      }
+    }
+
+    function proceedPayment() {
+      if (order.length === 0) {
+        alert('Please add at least one item first.');
+        return;
+      }
+
+      var total = order.reduce(function(sum, item) { return sum + item.subtotal; }, 0);
+
+      fetch('/api/create_order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items: order,
+          total: total
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          window.location.href = '/payment/' + data.transaction_id;
+        }
+      });
+    }
+
+    renderOrder();
+  </script>
+</body>
+</html>

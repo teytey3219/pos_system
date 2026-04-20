@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventory Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-500: #52B69A;
+      --clr-400: #94D2BD;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+      --clr-orange: #CA6702;
+    }
+
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+
+    /* NAVBAR */
+    .navbar {
+      background-color: var(--clr-900) !important;
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--clr-400) !important;
+      font-size: 1rem;
+    }
+    .btn-nav {
+      background: transparent;
+      border: 1.5px solid var(--clr-700);
+      color: var(--clr-400);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-nav:hover { background: var(--clr-700); color: white; }
+    .btn-logout {
+      background-color: var(--clr-red2);
+      border: none; color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background-color: var(--clr-red3); color: white; }
+
+    /* ADD ITEM BUTTON */
+    .btn-add-item {
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(10,147,150,0.3);
+    }
+    .btn-add-item:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(10,147,150,0.35);
+    }
+
+    /* LOW STOCK ALERT */
+    .alert-low-stock {
+      background: #fff7ed;
+      border: 1.5px solid #fed7aa;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .alert-low-stock strong {
+      color: var(--clr-orange);
+      font-size: 0.9rem;
+    }
+    .alert-low-stock ul {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+      font-size: 0.84rem;
+      color: #92400e;
+    }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--clr-900);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* SHOP CARDS */
+    .shop-card {
+      background: white;
+      border-radius: 14px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid #e2e8f0;
+      transition: all 0.22s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      height: 100%;
+    }
+    .shop-card:hover {
+      border-color: var(--clr-700);
+      background: #f0fafa;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(10,147,150,0.15);
+    }
+    .shop-card-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 14px;
+      box-shadow: 0 4px 12px rgba(10,147,150,0.25);
+    }
+    .shop-card h5 {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--clr-900);
+      margin-bottom: 4px;
+    }
+    .shop-card small {
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    /* INVENTORY SECTION */
+    #inventory-section { display: none; }
+
+    .inventory-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .inventory-header h4 {
+      font-weight: 800;
+      color: var(--clr-900);
+      font-size: 1.05rem;
+      margin: 0;
+    }
+    .shop-title-badge {
+      color: var(--clr-700);
+    }
+    .btn-back {
+      background: #f1f5f9;
+      border: none;
+      color: #475569;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      padding: 7px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { background: #e2e8f0; }
+
+    /* ADD ITEM FORM CARD */
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+    .form-card h6 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 0.88rem;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f4f8;
+      margin-bottom: 16px;
+    }
+    .form-label {
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: var(--clr-900);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-control {
+      border-radius: 8px;
+      border: 1.5px solid #d0dce6;
+      font-size: 0.85rem;
+      padding: 8px 11px;
+    }
+    .form-control:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 3px rgba(10,147,150,0.15);
+    }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+    }
+
+    /* ITEMS TABLE */
+    .table-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .table thead th {
+      background-color: var(--clr-900);
+      color: var(--clr-400);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      padding: 11px 13px;
+      white-space: nowrap;
+    }
+    .table tbody tr {
+      font-size: 0.85rem;
+      border-bottom: 1px solid #eef2f6;
+      transition: background 0.15s;
+    }
+    .table tbody tr:hover { background-color: #f0fafa; }
+    .table tbody td {
+      padding: 10px 13px;
+      vertical-align: middle;
+    }
+
+    /* STOCK BADGE */
+    .badge-ok {
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+    .badge-low {
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    /* ACTION BUTTONS inline */
+    .btn-edit-sm {
+      background-color: var(--clr-700);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-edit-sm:hover { background-color: var(--clr-800); color: white; }
+    .btn-update-sm {
+      background-color: var(--clr-orange);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-update-sm:hover { background-color: #b45309; }
+    .btn-delete-sm {
+      background-color: var(--clr-red2);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete-sm:hover { background-color: var(--clr-red3); }
+
+    .stock-input {
+      width: 75px;
+      border-radius: 6px;
+      border: 1.5px solid #d0dce6;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      display: inline-block;
+    }
+    .stock-input:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 2px rgba(10,147,150,0.15);
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">📦 Inventory Management</span>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/admin/dashboard" class="btn-nav">📊 Dashboard</a>
+      <a href="/admin/shops" class="btn-nav">🏪 Shops</a>
+      <a href="/admin/cashiers" class="btn-nav">👥 Cashiers</a>
+      <a href="/logout" class="btn-logout"
+         onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 mt-4">
+
+    <!-- LOW STOCK ALERTS -->
+    {% if low_stock %}
+    <div class="alert-low-stock">
+      <strong>⚠️ Low Stock Alerts</strong>
+      <ul>
+        {% for i in low_stock %}
+        <li><strong>{{ i['item_name'] }}</strong> at <strong>{{ i['shop_name'] }}</strong>
+          — only {{ i['stock'] }} left (min: {{ i['min_stock'] }})</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- ADD ITEM BUTTON -->
+    <div class="mb-4">
+      <a href="/admin/add_item" class="btn-add-item">➕ Add New Item to Multiple Shops</a>
+    </div>
+
+    <!-- STEP 1: SELECT SHOP -->
+    <div id="shop-select-section">
+      <div class="section-title">🏪 Select a Shop to Manage Inventory</div>
+      <div class="row g-3">
+        {% for shop in shop_list %}
+        <div class="col-md-4 col-sm-6">
+          <div class="shop-card"
+               onclick="selectShop({{ shop['id'] }}, '{{ shop['name'] }}')">
+            <div class="shop-icon">🏪</div>
+            <h5>{{ shop['name'] }}</h5>
+            <small>{{ shop['address'] or 'No address listed' }}</small>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not shop_list %}
+        <div class="col-12">
+          <div class="alert alert-info rounded-3">
+            No shops yet. <a href="/admin/shops">Add a shop first.</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- STEP 2: INVENTORY FOR SELECTED SHOP -->
+    <div id="inventory-section">
+      <div class="inventory-header">
+        <h4>📦 Inventory —
+          <span class="shop-title-badge" id="shop-title"></span>
+        </h4>
+        <button class="btn-back" onclick="goBack()">← Change Shop</button>
+      </div>
+
+      <div class="row g-3">
+
+        <!-- ADD ITEM FORM -->
+        <div class="col-md-3">
+          <div class="form-card">
+            <h6>➕ Add Item to Shop</h6>
+            <form method="POST" id="add-item-form">
+              <input type="hidden" name="action" value="add_item">
+              <input type="hidden" name="shop_id" id="form-shop-id" value="">
+              <div class="mb-2">
+                <label class="form-label">Item Name</label>
+                <input type="text" name="name" class="form-control"
+                       placeholder="e.g. Burger" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Price (₱)</label>
+                <input type="number" name="price" class="form-control"
+                       placeholder="e.g. 99.00" step="0.01" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Stock</label>
+                <input type="number" name="stock" class="form-control"
+                       placeholder="e.g. 50" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Min Stock (Alert)</label>
+                <input type="number" name="min_stock" class="form-control"
+                       placeholder="e.g. 5" required>
+              </div>
+              <button type="submit" class="btn-submit">✅ Add Item</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ITEMS TABLE -->
+        <div class="col-md-9">
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="table table-borderless" id="items-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Min Stock</th>
+                    <th>Update Stock</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="items-tbody">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                      Select a shop to view items.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentShopId = null;
+    const allItems = {{ inventory_data | tojson }};
+    const shopData = {{ shop_list | tojson }};
+  </script>
+
+  {% raw %}
+  <script>
+    function selectShop(shopId, shopName) {
+      currentShopId = shopId;
+      document.getElementById('shop-title').textContent = shopName;
+      document.getElementById('form-shop-id').value = shopId;
+      document.getElementById('shop-select-section').style.display = 'none';
+      document.getElementById('inventory-section').style.display = 'block';
+      renderItems(shopId);
+    }
+
+    function goBack() {
+      document.getElementById('shop-select-section').style.display = 'block';
+      document.getElementById('inventory-section').style.display = 'none';
+      currentShopId = null;
+    }
+
+    function renderItems(shopId) {
+      const tbody = document.getElementById('items-tbody');
+      const items = allItems[shopId] || [];
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No items yet for this shop. Add one using the form.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      items.forEach((item, index) => {
+        const lowStock = item.stock <= item.min_stock;
+        const stockBadge = lowStock
+          ? `<span class="badge-low">${item.stock} ⚠️</span>`
+          : `<span class="badge-ok">${item.stock}</span>`;
+
+        html += `
+          <tr>
+            <td>${index + 1}</td>
+            <td><strong>${item.name}</strong></td>
+            <td>₱${parseFloat(item.price).toFixed(2)}</td>
+            <td>${stockBadge}</td>
+            <td>${item.min_stock}</td>
+            <td>
+              <form method="POST" class="d-inline-flex align-items-center gap-1">
+                <input type="hidden" name="action" value="update_stock">
+                <input type="hidden" name="shop_id" value="${shopId}">
+                <input type="hidden" name="item_id" value="${item.id}">
+                <input type="number" name="stock" class="stock-input" placeholder="New qty" required>
+                <button type="submit" class="btn-update-sm">Update</button>
+              </form>
+            </td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="/admin/inventory/edit/${item.id}" class="btn-edit-sm">✏️ Edit</a>
+                <form method="POST" class="d-inline">
+                  <input type="hidden" name="action" value="delete_item">
+                  <input type="hidden" name="item_id" value="${item.id}">
+                  <input type="hidden" name="shop_id" value="${shopId}">
+                  <button type="submit" class="btn-delete-sm"
+                    onclick="return confirm('Delete this item from all shops?')">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // Auto-select shop if redirected back with shop_id
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedShop = urlParams.get('shop_id');
+    if (preselectedShop) {
+      const shop = shopData.find(s => s.id == preselectedShop);
+      if (shop) selectShop(shop.id, shop.name);
+    }
+  </script>
+  {% endraw %}
+
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Receipt #{{ txn.id }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-cream: #E9D8A6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background-color: var(--clr-900);
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-400);
+    }
+    .page-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .btn-action {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+    }
+    .btn-print {
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+    }
+    .btn-print:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      transform: translateY(-1px);
+    }
+    .btn-new {
+      background: #2563eb;
+    }
+    .btn-new:hover { background: #1d4ed8; color: white; }
+    .btn-dash {
+      background: #475569;
+    }
+    .btn-dash:hover { background: #334155; color: white; }
+    .receipt-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .receipt-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .receipt-header .icon {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .receipt-header h3 {
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--clr-900);
+      margin-bottom: 2px;
+    }
+    .receipt-header .shop-name {
+      color: var(--clr-700);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .divider {
+      border: none;
+      border-top: 1.5px dashed #cde;
+      margin: 14px 0;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: #444;
+    }
+    .meta-row strong { color: var(--clr-900); }
+    .items-table {
+      width: 100%;
+      font-size: 0.88rem;
+      margin: 10px 0;
+    }
+    .items-table td {
+      padding: 5px 2px;
+      color: var(--clr-900);
+    }
+    .items-table td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: var(--clr-800);
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 10px;
+    }
+    .total-row .label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--clr-400);
+    }
+    .total-row .amount {
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+    .thank-you {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+    @media print {
+      .action-buttons, .navbar { display: none !important; }
+      body { background: white; }
+      .receipt-card { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">🧾 Official Receipt</span>
+  </nav>
+
+  <div class="page-body">
+
+    <div class="action-buttons">
+      <button onclick="window.print()" class="btn-action btn-print">🖨️ Print Receipt</button>
+      <a href="/cashier/pos" class="btn-action btn-new">🛒 New Order</a>
+      <a href="/admin/dashboard" class="btn-action btn-dash">📊 Dashboard</a>
+    </div>
+
+    <div class="receipt-card">
+      <div class="receipt-header">
+        <span class="icon">🧾</span>
+        <h3>Official Receipt</h3>
+        <div class="shop-name">{{ txn.shop_name or 'POS System' }}</div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="meta-row"><span><strong>Transaction #:</strong></span><span>{{ txn.id }}</span></div>
+      <div class="meta-row"><span><strong>Cashier:</strong></span><span>{{ txn.cashier_name }}</span></div>
+      <div class="meta-row"><span><strong>Shop:</strong></span><span>{{ txn.shop_name }}</span></div>
+      <div class="meta-row"><span><strong>Date:</strong></span><span>{{ txn.created_at }}</span></div>
+      <div class="meta-row"><span><strong>Payment:</strong></span><span>{{ txn.payment_method }}</span></div>
+
+      <hr class="divider">
+
+      <table class="items-table">
+        {% for item in items %}
+        <tr>
+          <td>{{ item.name }} x{{ item.quantity }}</td>
+          <td>₱{{ "%.2f"|format(item.subtotal) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="total-row">
+        <span class="label">Total</span>
+        <span class="amount">₱{{ "%.2f"|format(txn.total) }}</span>
+      </div>
+
+      <div class="thank-you">
+        Thank you for your purchase! 😊<br>Please come again.
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

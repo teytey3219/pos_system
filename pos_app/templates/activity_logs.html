@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Activity Logs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-red2: #AE2012;
+      --clr-green: #2d6a4f;
+      --clr-orange: #CA6702;
+    }
+
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+
+    /* NAVBAR */
+    .navbar {
+      background-color: var(--clr-900);
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand { font-weight: 700; color: var(--clr-400) !important; font-size: 1rem; }
+    .btn-nav {
+      background: transparent; border: 1.5px solid var(--clr-700);
+      color: var(--clr-400); border-radius: 6px; font-size: 0.8rem;
+      padding: 5px 14px; text-decoration: none; transition: all 0.2s;
+      display: inline-block;
+    }
+    .btn-nav:hover { background: var(--clr-700); color: white; }
+
+    /* FILTER CARD */
+    .filter-card {
+      background: white; border-radius: 14px;
+      padding: 20px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 24px;
+    }
+    .filter-card label {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      color: var(--clr-900); margin-bottom: 5px; display: block;
+    }
+    .form-select, .form-control {
+      border-radius: 8px; border: 1.5px solid #d0dce6;
+      font-size: 0.85rem; padding: 8px 12px;
+    }
+    .form-select:focus, .form-control:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 3px rgba(10,147,150,0.15);
+      outline: none;
+    }
+    .btn-filter {
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none; color: white; border-radius: 8px;
+      padding: 9px 20px; font-weight: 700; font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-filter:hover { opacity: 0.9; }
+    .btn-clear {
+      background: #f1f5f9; border: none; color: #475569;
+      border-radius: 8px; padding: 9px 16px; font-size: 0.85rem;
+      text-decoration: none; display: inline-block; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-clear:hover { background: #e2e8f0; color: #333; }
+
+    /* SUMMARY CARDS */
+    .summary-card {
+      background: white; border-radius: 14px;
+      padding: 18px 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      border-left: 4px solid transparent;
+      position: relative; overflow: hidden;
+    }
+    .summary-card.teal   { border-left-color: var(--clr-700); }
+    .summary-card.green  { border-left-color: var(--clr-green); }
+    .summary-card.orange { border-left-color: var(--clr-orange); }
+    .summary-card.red    { border-left-color: var(--clr-red2); }
+    .summary-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 4px;
+    }
+    .summary-value { font-size: 1.7rem; font-weight: 800; }
+    .summary-icon {
+      position: absolute; right: 16px; top: 50%;
+      transform: translateY(-50%); font-size: 2rem; opacity: 0.1;
+    }
+
+    /* TABLE CARD */
+    .table-card {
+      background: white; border-radius: 14px;
+      padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .table-card h6 {
+      font-weight: 700; color: var(--clr-900); font-size: 0.95rem;
+      border-bottom: 2px solid #f0f4f8;
+      padding-bottom: 12px; margin-bottom: 18px;
+    }
+    .table thead th {
+      background-color: var(--clr-900); color: var(--clr-400);
+      font-size: 0.73rem; font-weight: 600; letter-spacing: 0.5px;
+      text-transform: uppercase; border: none; padding: 12px 14px;
+      white-space: nowrap;
+    }
+    .table tbody tr {
+      font-size: 0.85rem; border-bottom: 1px solid #eef2f6;
+      transition: background 0.15s;
+    }
+    .table tbody tr:hover { background-color: #f0fafa; }
+    .table tbody td { padding: 10px 14px; vertical-align: middle; }
+
+    /* ACTION BADGES */
+    .badge-action {
+      font-size: 0.72rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px; display: inline-block;
+    }
+    .badge-LOGIN  { background: #e0f2fe; color: #0369a1; }
+    .badge-LOGOUT { background: #f1f5f9; color: #475569; }
+    .badge-SALE   { background: #dcfce7; color: var(--clr-green); }
+    .badge-VOID   { background: #fff0f0; color: var(--clr-red2); }
+
+    .badge-shop {
+      background: #e0f2fe; color: #0369a1;
+      font-size: 0.72rem; padding: 3px 9px;
+      border-radius: 20px; font-weight: 600;
+    }
+
+    .text-time { color: #64748b; font-size: 0.8rem; white-space: nowrap; }
+    .text-time span { color: #94a3b8; font-size: 0.75rem; }
+    .text-desc { color: #64748b; font-size: 0.82rem; }
+    .log-id { color: #94a3b8; font-size: 0.78rem; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 48px; color: #94a3b8; }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">📋 Activity Logs</span>
+    <div class="ms-auto">
+      <a href="/admin/dashboard" class="btn-nav">← Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 mt-4">
+
+    <!-- FILTER -->
+    <div class="filter-card">
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-auto">
+          <label>Filter by Shop</label>
+          <select name="shop_id" class="form-select">
+            <option value="">All Shops</option>
+            {% for shop in shops %}
+            <option value="{{ shop['id'] }}"
+              {{ 'selected' if selected_shop == shop['id']|string else '' }}>
+              {{ shop['name'] }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Action Type</label>
+          <select name="action" class="form-select">
+            <option value="">All Actions</option>
+            <option value="LOGIN"  {{ 'selected' if selected_action == 'LOGIN' }}>🔐 Login</option>
+            <option value="LOGOUT" {{ 'selected' if selected_action == 'LOGOUT' }}>🚪 Logout</option>
+            <option value="SALE"   {{ 'selected' if selected_action == 'SALE' }}>💰 Sale</option>
+            <option value="VOID"   {{ 'selected' if selected_action == 'VOID' }}>❌ Void</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Date From</label>
+          <input type="date" name="date_from" class="form-control"
+                 value="{{ date_from }}">
+        </div>
+        <div class="col-auto">
+          <label>Date To</label>
+          <input type="date" name="date_to" class="form-control"
+                 value="{{ date_to }}">
+        </div>
+        <div class="col-auto d-flex gap-2">
+          <button type="submit" class="btn-filter">🔍 Filter</button>
+          <a href="/admin/activity-logs" class="btn-clear">✕ Clear</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="summary-card teal">
+          <div class="summary-label">Total Logs</div>
+          <div class="summary-value" style="color:var(--clr-700);">{{ logs|length }}</div>
+          <div class="summary-icon">📋</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card green">
+          <div class="summary-label">Sales</div>
+          <div class="summary-value" style="color:var(--clr-green);">
+            {{ logs | selectattr('action','equalto','SALE') | list | length }}
+          </div>
+          <div class="summary-icon">💰</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card orange">
+          <div class="summary-label">Logins</div>
+          <div class="summary-value" style="color:var(--clr-orange);">
+            {{ logs | selectattr('action','equalto','LOGIN') | list | length }}
+          </div>
+          <div class="summary-icon">🔐</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card red">
+          <div class="summary-label">Voids</div>
+          <div class="summary-value" style="color:var(--clr-red2);">
+            {{ logs | selectattr('action','equalto','VOID') | list | length }}
+          </div>
+          <div class="summary-icon">❌</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG TABLE -->
+    <div class="table-card mb-5">
+      <h6>🗂️ Activity Log Entries
+        <span class="ms-2" style="font-size:0.78rem; color:#94a3b8; font-weight:400;">
+          Showing latest 500 records
+        </span>
+      </h6>
+
+      {% if logs %}
+      <div class="table-responsive">
+        <table class="table table-borderless">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Timestamp</th>
+              <th>Cashier</th>
+              <th>Shop</th>
+              <th>Action</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td class="log-id">{{ log['id'] }}</td>
+              <td class="text-time">
+                🕐 {{ log['created_at'].strftime('%b %d, %Y') }}<br>
+                <span>{{ log['created_at'].strftime('%I:%M %p') }}</span>
+              </td>
+              <td><strong>{{ log['cashier_name'] }}</strong></td>
+              <td><span class="badge-shop">🏪 {{ log['shop_name'] }}</span></td>
+              <td>
+                <span class="badge-action badge-{{ log['action'] }}">
+                  {% if log['action'] == 'LOGIN' %}🔐
+                  {% elif log['action'] == 'LOGOUT' %}🚪
+                  {% elif log['action'] == 'SALE' %}💰
+                  {% elif log['action'] == 'VOID' %}❌
+                  {% endif %}
+                  {{ log['action'] }}
+                </span>
+              </td>
+              <td class="text-desc">{{ log['description'] or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>No activity logs found.<br>Try adjusting your filters or make a transaction first.</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</body>
+</html>

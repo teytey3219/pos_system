@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Shops</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+    }
+
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+
+    /* NAVBAR */
+    .navbar {
+      background-color: var(--clr-900) !important;
+      padding: 10px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--clr-400) !important;
+      font-size: 1rem;
+    }
+    .btn-nav {
+      background: transparent;
+      border: 1.5px solid var(--clr-700);
+      color: var(--clr-400);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-nav:hover { background: var(--clr-700); color: white; }
+    .btn-logout {
+      background-color: var(--clr-red2);
+      border: none; color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background-color: var(--clr-red3); color: white; }
+
+    /* FORM CARD */
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .form-card h5 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f4f8;
+      margin-bottom: 18px;
+    }
+    .form-label {
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--clr-900);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-control {
+      border-radius: 8px;
+      border: 1.5px solid #d0dce6;
+      font-size: 0.88rem;
+      padding: 9px 12px;
+    }
+    .form-control:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 3px rgba(10,147,150,0.15);
+    }
+    .btn-add {
+      width: 100%;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 8px;
+      padding: 11px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-add:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      transform: translateY(-1px);
+    }
+
+    /* TABLE CARD */
+    .table-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .table-card h5 {
+      font-weight: 700;
+      color: var(--clr-900);
+      font-size: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f4f8;
+      margin-bottom: 18px;
+    }
+    .table thead th {
+      background-color: var(--clr-900);
+      color: var(--clr-400);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      padding: 12px 14px;
+      white-space: nowrap;
+    }
+    .table tbody tr {
+      font-size: 0.88rem;
+      border-bottom: 1px solid #eef2f6;
+      transition: background 0.15s;
+    }
+    .table tbody tr:hover { background-color: #f0fafa; }
+    .table tbody td {
+      padding: 12px 14px;
+      vertical-align: middle;
+    }
+
+    /* CASHIER BADGE */
+    .badge-cashier {
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .badge-cashier.has-cashiers {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    /* DELETE BUTTON */
+    .btn-delete {
+      background-color: var(--clr-red2);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 5px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete:hover { background-color: var(--clr-red3); }
+
+    /* SHOP NAME with icon */
+    .shop-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--clr-900);
+    }
+    .shop-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">🏪 Manage Shops</span>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/admin/dashboard" class="btn-nav">📊 Dashboard</a>
+      <a href="/admin/cashiers" class="btn-nav">👥 Cashiers</a>
+      <a href="/admin/inventory" class="btn-nav">📦 Inventory</a>
+      <a href="/logout" class="btn-logout"
+         onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 mt-4">
+    <div class="row g-4">
+
+      <!-- ADD SHOP FORM -->
+      <div class="col-md-4">
+        <div class="form-card">
+          <h5>➕ Add New Shop</h5>
+          <form method="POST">
+            <input type="hidden" name="action" value="add">
+            <div class="mb-3">
+              <label class="form-label">Shop Name</label>
+              <input type="text" name="name" class="form-control"
+                     placeholder="e.g. SM Branch" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Address</label>
+              <input type="text" name="address" class="form-control"
+                     placeholder="e.g. SM Mall, Quezon City">
+            </div>
+            <button type="submit" class="btn-add">✅ Add Shop</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- SHOPS TABLE -->
+      <div class="col-md-8">
+        <div class="table-card">
+          <h5>🏪 All Shops</h5>
+          <div class="table-responsive">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Shop Name</th>
+                  <th>Address</th>
+                  <th>Cashiers</th>
+                  <th>Date Added</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for shop in shops %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>
+                    <div class="shop-name">
+                      <div class="shop-icon">🏪</div>
+                      {{ shop['name'] }}
+                    </div>
+                  </td>
+                  <td>{{ shop['address'] or '—' }}</td>
+                  <td>
+                    <span class="badge-cashier {% if shop['cashier_count'] > 0 %}has-cashiers{% endif %}">
+                      {{ shop['cashier_count'] }} cashier(s)
+                    </span>
+                  </td>
+                  <td>{{ shop['created_at'] }}</td>
+                  <td>
+                    <form method="POST" class="d-inline">
+                      <input type="hidden" name="action" value="delete">
+                      <input type="hidden" name="shop_id" value="{{ shop['id'] }}">
+                      <button type="submit" class="btn-delete"
+                        onclick="return confirm('Delete this shop? This cannot be undone.')">
+                        🗑️ Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% if not shops %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    No shops yet. Add one using the form on the left.
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

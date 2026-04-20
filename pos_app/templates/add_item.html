@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Item</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root {
+      --clr-900: #001219;
+      --clr-800: #005F73;
+      --clr-700: #0A9396;
+      --clr-400: #94D2BD;
+      --clr-red2: #AE2012;
+      --clr-red3: #9B2226;
+    }
+
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+
+    .navbar {
+      background-color: var(--clr-900) !important;
+      padding: 10px 24px;
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--clr-400) !important;
+    }
+    .btn-nav {
+      background: transparent;
+      border: 1.5px solid var(--clr-700);
+      color: var(--clr-400);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+    }
+    .btn-nav:hover { background: var(--clr-700); color: white; }
+    .btn-logout {
+      background-color: var(--clr-red2);
+      border: none; color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      padding: 4px 12px;
+    }
+    .btn-logout:hover { background-color: var(--clr-red3); color: white; }
+
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      max-width: 700px;
+      margin: 40px auto;
+    }
+
+    .form-card h4 {
+      font-weight: 700;
+      color: var(--clr-900);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f4f8;
+    }
+
+    .form-label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--clr-900);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .form-control {
+      border-radius: 8px;
+      border: 1.5px solid #d0dce6;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+    }
+
+    .form-control:focus {
+      border-color: var(--clr-700);
+      box-shadow: 0 0 0 3px rgba(10,147,150,0.15);
+    }
+
+    .shop-block {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+      background: #f8fbfc;
+    }
+
+    .shop-block.active {
+      border-color: var(--clr-700);
+      background: #f0fafa;
+    }
+
+    .shop-check-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--clr-900);
+      cursor: pointer;
+    }
+
+    .shop-fields {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .shop-fields.show { display: block; }
+
+    .shop-fields .form-label {
+      font-size: 0.78rem;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--clr-800), var(--clr-700));
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 12px 32px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, var(--clr-900), var(--clr-800));
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: #f1f5f9;
+      border: none;
+      color: #64748b;
+      border-radius: 10px;
+      padding: 11px 32px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      width: 100%;
+      margin-top: 8px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-cancel:hover { background: #e2e8f0; color: #333; }
+
+    .alert-success-msg {
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--clr-700);
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar d-flex align-items-center">
+    <span class="navbar-brand">📦 Add New Item</span>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/admin/inventory" class="btn btn-nav">← Back to Inventory</a>
+      <a href="/admin/dashboard" class="btn btn-nav">📊 Dashboard</a>
+      <a href="/logout" class="btn btn-logout"
+         onclick="return confirm('Are you sure you want to logout?')">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="form-card">
+      <h4>➕ Add New Item</h4>
+
+      {% if success %}
+      <div class="alert-success-msg">✅ Item "{{ success }}" added successfully!</div>
+      {% endif %}
+
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/admin/add_item">
+
+        <!-- ITEM DETAILS -->
+        <div class="section-title">Item Details</div>
+
+        <div class="mb-3">
+          <label class="form-label">Item Name</label>
+          <input type="text" name="name" class="form-control"
+                 placeholder="e.g. Burger, Fries, Iced Tea"
+                 required>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Price (₱)</label>
+          <input type="number" name="price" class="form-control"
+                 placeholder="e.g. 99.00"
+                 step="0.01" min="0" required>
+        </div>
+
+        <!-- SHOP SELECTION -->
+        <div class="section-title">Select Shops & Set Stock</div>
+        <p class="text-muted" style="font-size:0.83rem; margin-top:-8px; margin-bottom:14px;">
+          Check the shops where this item is available. Set stock and minimum stock per shop.
+        </p>
+
+        {% for shop in shops %}
+        <div class="shop-block" id="block-{{ shop.id }}">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox"
+                   name="shop_ids" value="{{ shop.id }}"
+                   id="shop-{{ shop.id }}"
+                   onchange="toggleShop({{ shop.id }})">
+            <label class="shop-check-label form-check-label" for="shop-{{ shop.id }}">
+              🏪 {{ shop.name }}
+              <small class="text-muted fw-normal">— {{ shop.location }}</small>
+            </label>
+          </div>
+
+          <div class="shop-fields" id="fields-{{ shop.id }}">
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label">Stock for {{ shop.name }}</label>
+                <input type="number" name="stock_{{ shop.id }}"
+                       class="form-control" placeholder="e.g. 50"
+                       min="0" value="0">
+              </div>
+              <div class="col-6">
+                <label class="form-label">Min Stock (Low Warning)</label>
+                <input type="number" name="min_stock_{{ shop.id }}"
+                       class="form-control" placeholder="e.g. 5"
+                       min="0" value="5">
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="mt-4">
+          <button type="submit" class="btn-submit">✅ Save Item</button>
+          <a href="/admin/inventory" class="btn-cancel">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleShop(shopId) {
+      var checkbox = document.getElementById('shop-' + shopId);
+      var fields = document.getElementById('fields-' + shopId);
+      var block = document.getElementById('block-' + shopId);
+      if (checkbox.checked) {
+        fields.classList.add('show');
+        block.classList.add('active');
+      } else {
+        fields.classList.remove('show');
+        block.classList.remove('active');
+      }
+    }
+  </script>
+
+</body>
+</html>
