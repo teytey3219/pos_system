@@ -392,7 +392,19 @@ def inventory():
     if request.method == 'POST':
         action = request.form.get('action')
         shop_id = request.form.get('shop_id')
-        if action == 'update_stock':
+        if action == 'add_item':
+            name = request.form.get('name', '').strip()
+            price = request.form.get('price', '0')
+            stock = request.form.get('stock', 0)
+            min_stock = request.form.get('min_stock', 5)
+            if name and shop_id:
+                cur.execute("INSERT INTO items (name, price) VALUES (?,?)", (name, price))
+                db.commit()
+                new_item_id = cur.lastrowid
+                cur.execute("""INSERT INTO shop_inventory (shop_id, item_id, stock, min_stock, is_active)
+                    VALUES (?,?,?,?,1)""", (shop_id, new_item_id, stock, min_stock))
+                db.commit()
+        elif action == 'update_stock':
             cur.execute("UPDATE shop_inventory SET stock=? WHERE shop_id=? AND item_id=?",
                         (request.form['stock'], request.form['shop_id'], request.form['item_id']))
             db.commit()
