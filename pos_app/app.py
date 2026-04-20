@@ -397,7 +397,10 @@ def inventory():
                         (request.form['stock'], request.form['shop_id'], request.form['item_id']))
             db.commit()
         elif action == 'delete_item':
-            cur.execute("DELETE FROM items WHERE id=?", (request.form['item_id'],))
+            item_id = request.form['item_id']
+            cur.execute("DELETE FROM transaction_items WHERE item_id=?", (item_id,))
+            cur.execute("DELETE FROM shop_inventory WHERE item_id=?", (item_id,))
+            cur.execute("DELETE FROM items WHERE id=?", (item_id,))
             db.commit()
         db.close()
         return redirect('/admin/inventory' + (f'?shop_id={shop_id}' if shop_id else ''))
