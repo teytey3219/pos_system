@@ -254,8 +254,8 @@
             <tr>
               <td class="log-id">{{ log['id'] }}</td>
               <td class="text-time">
-                🕐 {{ log['created_at'].strftime('%b %d, %Y') }}<br>
-                <span>{{ log['created_at'].strftime('%I:%M %p') }}</span>
+                🕐 {{ log['created_at'][:10] }}<br>
+                <span>{{ log['created_at'][11:16] }}</span>
               </td>
               <td><strong>{{ log['cashier_name'] }}</strong></td>
               <td><span class="badge-shop">🏪 {{ log['shop_name'] }}</span></td>
