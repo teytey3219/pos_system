@@ -510,12 +510,13 @@ def edit_item(item_id):
         cur.execute("UPDATE items SET name=?, price=? WHERE id=?",
                     (request.form['name'], request.form['price'], item_id))
         cur.execute("SELECT id FROM shops")
-        for shop in cur.fetchall():
-            sid = shop['id']
+        shops_for_edit = [row['id'] for row in cur.fetchall()]
+        for sid in shops_for_edit:
             stock = request.form.get(f'stock_{sid}', 0)
             min_stock = request.form.get(f'min_stock_{sid}', 5)
-            cur.execute("SELECT id FROM shop_inventory WHERE shop_id=? AND item_id=?", (sid, item_id))
-            if cur.fetchone():
+            cur2 = db.cursor()
+            cur2.execute("SELECT id FROM shop_inventory WHERE shop_id=? AND item_id=?", (sid, item_id))
+            if cur2.fetchone():
                 cur.execute("UPDATE shop_inventory SET stock=?, min_stock=? WHERE shop_id=? AND item_id=?",
                             (stock, min_stock, sid, item_id))
             else:
